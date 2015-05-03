@@ -13,15 +13,16 @@ void init_fuse() {
 	poi_op.getattr	= poi_getattr;
 	poi_op.readdir	= poi_readdir;
 	poi_op.mkdir	= poi_mkdir;
-	poi_op.open 	= poi_open;
-	poi_op.rmdir 	= poi_rmdir;
-	poi_op.rename	= poi_rename;
-	poi_op.unlink	= poi_unlink;
 	poi_op.mknod	= poi_mknod;
-	poi_op.truncate= poi_truncate;
-	poi_op.write	= poi_write;
 	poi_op.read	= poi_read;
+	poi_op.rmdir 	= poi_rmdir;
+	poi_op.unlink	= poi_unlink;
+	poi_op.rename	= poi_rename;
+	poi_op.write	= poi_write;
+	poi_op.truncate= poi_truncate;
+	poi_op.open 	= poi_open;
 	poi_op.link	= poi_link;
+	poi_op.chmod	= poi_chmod;
 }
 
 int main(int argc, char** argv){

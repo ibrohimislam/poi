@@ -38,3 +38,5 @@ int poi_read(const char *path,char *buf,size_t size,off_t offset,struct fuse_fil
 int poi_write(const char *path, const char *buf, size_t size, off_t offset,struct fuse_file_info *fi);
 
 int poi_link(const char *path, const char *newpath);
+
+int poi_chmod (const char *path, mode_t newmode);

@@ -29,10 +29,10 @@ int poi_getattr(const char* path, struct stat* stbuf) {
 		
 		// cek direktori atau bukan
 		if (entry.getAttr() & 0x8) {
-			stbuf->st_mode = S_IFDIR | (0770 + (entry.getAttr() & 0x7));
+			stbuf->st_mode = S_IFDIR | (0000 + ((entry.getAttr() & 0x7) << 6));
 		}
 		else {
-			stbuf->st_mode = S_IFREG | (0660 + (entry.getAttr() & 0x7));
+			stbuf->st_mode = S_IFREG | (0000 + ((entry.getAttr() & 0x7) << 6));
 		}
 		
 		// ukuran file
@@ -295,5 +295,19 @@ int poi_link(const char *path, const char *newpath) {
 		offset += 4096;
 	}
 	
+	return 0;
+}
+
+int poi_chmod (const char *path, mode_t newmode) {
+	Entry entry = Entry(0,0).getEntry(path);
+	
+	/* kalo nama kosong */
+	if(entry.isEmpty()){
+		return -ENOENT;
+	}
+	
+	entry.setAttr(((newmode & 0700) >> 6) & 0x07);
+	entry.write();
+
 	return 0;
 }
