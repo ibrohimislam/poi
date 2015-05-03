@@ -125,6 +125,60 @@ Entry Entry::getNewEntry(const char *path) {
 	}
 }
 
+/** Mendapatkan Entry dari path */
+Entry Entry::createLink(const char *path, const ptr_block) {
+	/* mendapatkan direktori teratas */
+	unsigned int endstr = 1;
+	while (path[endstr] != '/' && endstr < strlen(path)) {
+		endstr++;
+	}
+	string topDirectory = string(path + 1, endstr - 1);
+	
+	/* mencari entri dengan nama topDirectory */
+	Entry entry(position, offset);
+	while (getName() != topDirectory && position != END_BLOCK) {
+		*this = nextEntry();
+	}
+	
+	/* kalau tidak ketemu, buat entry baru */
+	if (isEmpty()) {
+		while (!entry.isEmpty()) {
+			if (entry.nextEntry().position == END_BLOCK) {
+				entry = Entry(filesystem.allocateBlock(), 0);
+			}
+			else {
+				entry = entry.nextEntry();
+			}
+		}
+		/* beri atribut pada entry */
+		entry.setName(topDirectory.c_str());
+		entry.setAttr(0xFF);
+		entry.setIndex(ptr_block);
+		entry.setSize(0);
+		entry.setTime(0);
+		entry.setDate(0);
+		entry.write();
+		
+		*this = entry;
+	}
+	
+	if (endstr == strlen(path)) {
+		return *this;
+	}
+	else {
+		/* cek apakah direktori atau bukan */
+		if (getAttr() & 0x8) {
+			ptr_block index;
+			memcpy((char*)&index, data + 0x1A, 2);
+			Entry next(index, 0);
+			return next.getNewEntry(path + endstr);
+		}
+		else {
+			return Entry();
+		}
+	}
+}
+
 /** Mengembalikan entry kosong selanjutnya. Jika blok penuh, akan dibuatkan entri baru */
 Entry Entry::getNextEmptyEntry() {
 	Entry entry(*this);

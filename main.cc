@@ -27,12 +27,12 @@ void init_fuse() {
 
 int main(int argc, char** argv){
 	if (argc < 3) {
-		printf("Usage: ./poi <mount folder> <filesystem.poi> [--new]\n");
+		printf("Usage: ./poi <mount folder> <filesystem.poi> [-new]\n");
 		return 0;
 	}
 	
 	// jika terdapat argumen --new, buat baru
-	if (argc > 3 && string(argv[3]) == "--new") {
+	if (argc > 3 && string(argv[3]) == "-new") {
 		filesystem.create(argv[2]);
 	}
 	

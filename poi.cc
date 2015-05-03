@@ -29,10 +29,9 @@ int poi_getattr(const char* path, struct stat* stbuf) {
 		
 		// cek direktori atau bukan
 		if (entry.getAttr() & 0x8) {
-			stbuf->st_mode = S_IFDIR | (0000 + ((entry.getAttr() & 0x7) << 6));
-		}
-		else {
-			stbuf->st_mode = S_IFREG | (0000 + ((entry.getAttr() & 0x7) << 6));
+			stbuf->st_mode = S_IFDIR | (0770 + (entry.getAttr() & 0x7));
+		} else {
+			stbuf->st_mode = S_IFREG | (0770 + (entry.getAttr() & 0x7));
 		}
 		
 		// ukuran file
@@ -157,11 +156,12 @@ int poi_rename(const char* path, const char* newpath) {
 
 /* menghapus file */
 int poi_unlink(const char *path) {
+	
 	Entry entry = Entry(0,0).getEntry(path);
-	if(entry.getAttr() & 0x8){
+
+	if (entry.getAttr() & 0x8) {
 		return -ENOENT;
-	}
-	else{
+	} else {
 		filesystem.freeBlock(entry.getIndex());
 		entry.makeEmpty();
 	}
@@ -177,6 +177,7 @@ int poi_mknod(const char *path, mode_t mode, dev_t dev) {
 	string parentPath = string(path, i);
 	
 	Entry entry;
+
 	//bagi kasus kalau dia root
 	if (parentPath == "") {
 		entry = Entry(0, 0);
@@ -192,7 +193,7 @@ int poi_mknod(const char *path, mode_t mode, dev_t dev) {
 
 	/* menuliskan data di entry tersebut */
 	entry.setName(path + i + 1);
-	entry.setAttr(0x06);
+	entry.setAttr((mode & 0700) >> 6);
 	entry.setTime(0x00);
 	entry.setCurrentDateTime();
 	entry.setIndex(filesystem.allocateBlock());
@@ -208,7 +209,7 @@ int poi_truncate(const char *path, off_t newsize) {
 	Entry entry = Entry(0, 0).getEntry(path);
 	
 	/* set sizenya */
-	entry.setSize(newsize);
+	entry.setSize(newsize >> 0x03);
 	entry.write();
 	
 	/* urusin allocation table */
@@ -268,7 +269,7 @@ int poi_link(const char *path, const char *newpath) {
 	Entry oldentry = Entry(0,0).getEntry(path);
 	
 	/* kalo nama kosong */
-	if(oldentry.isEmpty()){
+	if(oldentry.isEmpty()) {
 		return -ENOENT;
 	}
 	/* buat entry baru dengan nama newpath */
@@ -277,23 +278,25 @@ int poi_link(const char *path, const char *newpath) {
 	newentry.setAttr(oldentry.getAttr());
 	newentry.setCurrentDateTime();
 	newentry.setSize(oldentry.getSize());
+	newentry.setIndex(oldentry.getIndex());
 	newentry.write();
 	
 	/* copy isi file */
-	char buffer[4096];
+	// char buffer[4096];
 	/* lakukan per 4096 byte */
-	int totalsize = oldentry.getSize();
-	int offset = 0;
-	while (totalsize > 0) {
-		int sizenow = totalsize;
-		if (sizenow > 4096) {
-			sizenow = 4096;
-		}
-		filesystem.readBlock(oldentry.getIndex(), buffer, oldentry.getSize(), offset);
-		filesystem.writeBlock(newentry.getIndex(), buffer, newentry.getSize(), offset);
-		totalsize -= sizenow;
-		offset += 4096;
-	}
+	// int totalsize = oldentry.getSize();
+	
+	// int offset = 0;
+	// while (totalsize > 0) {
+	// 	int sizenow = totalsize;
+	// 	if (sizenow > 4096) {
+	// 		sizenow = 4096;
+	// 	}
+	// 	filesystem.readBlock(oldentry.getIndex(), buffer, oldentry.getSize(), offset);
+	// 	filesystem.writeBlock(newentry.getIndex(), buffer, newentry.getSize(), offset);
+	// 	totalsize -= sizenow;
+	// 	offset += 4096;
+	// }
 	
 	return 0;
 }
