@@ -193,11 +193,11 @@ int poi_mknod(const char *path, mode_t mode, dev_t dev) {
 
 	/* menuliskan data di entry tersebut */
 	entry.setName(path + i + 1);
-	entry.setAttr((mode & 0700) >> 6);
+	entry.setAttr((mode & 0007) + 0770);
 	entry.setTime(0x00);
 	entry.setCurrentDateTime();
 	entry.setIndex(filesystem.allocateBlock());
-	entry.setSize(0x00);
+	entry.setSize(0x0F);
 
 	entry.write();
 
